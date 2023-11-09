@@ -3,7 +3,7 @@
 
 import SwiftUI
 
-struct GKSlider: View {
+public struct GKSlider: View {
 
     let range: Range<Double>
     @Binding var sliderValue: Double
@@ -13,7 +13,7 @@ struct GKSlider: View {
     @State private var lastPosition: CGPoint?
     @State private var lastSliderValue: Double = 0.0
 
-    init(range: Range<Double>,
+ public init(range: Range<Double>,
          sliderValue: Binding<Double>,
          configuration: Configuration = Configuration()) {
         self.range = range
@@ -21,7 +21,7 @@ struct GKSlider: View {
         self.configuration = configuration
     }
 
-    var body: some View {
+   public var body: some View {
         GeometryReader { reader in
             ZStack {
                 Capsule()
@@ -63,17 +63,27 @@ struct GKSlider: View {
                             lastSliderValue = sliderValue
                         }
                 }
-            }
+            }.frame(height: configuration.handleSize)
         }
     }
 }
 
-extension GKSlider {
+public extension GKSlider {
     struct Configuration {
-        var onTintColor: Color = .blue
-        var offTintColor: Color = .black
-        var handleSize: CGFloat = 10
-        var handleColor: Color = .white
+        var onTintColor: Color
+        var offTintColor: Color
+        var handleSize: CGFloat
+        var handleColor: Color
+
+      public init(onTintColor: Color = .blue,
+                  offTintColor: Color = .black,
+                  handleSize: CGFloat = 10,
+                  handleColor: Color  = .white) {
+            self.onTintColor = onTintColor
+            self.offTintColor = offTintColor
+            self.handleSize = handleSize
+            self.handleColor = handleColor
+        }
     }
 }
 
