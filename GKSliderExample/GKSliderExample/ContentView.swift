@@ -24,10 +24,14 @@ struct ContentView: View {
                     .padding(.bottom)
 
                 Text("\(value)")
-
+                
                 GKSlider(range: -10..<10,
                          sliderValue: $value,
-                         configuration: .init())
+                         configuration: .init()
+                )
+                .frame(width: 300, height: 20)
+
+                Slider(value: $value, in: -10.0...10.0, step: 5)
             }
             .padding()
         }

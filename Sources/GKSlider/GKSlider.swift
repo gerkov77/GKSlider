@@ -3,22 +3,25 @@
 
 import SwiftUI
 
-public struct GKSlider: View {
+public struct GKSlider<V: BinaryFloatingPoint>: View {
     let configuration: Configuration
-    let range: Range<Double>
+    let range: ClosedRange<V>
+    var step: V.Stride
 
-    @Binding var sliderValue: Double
+    @Binding var sliderValue: V
 
     @State private(set) var position = CGPoint(x: 0.0, y: 0.0)
     @State private var lastPosition: CGPoint?
-    @State private var lastSliderValue: Double = 0.0
+    @State private var lastSliderValue: V = 0
 
-    public init(range: Range<Double>,
-                sliderValue: Binding<Double>,
-                configuration: Configuration = Configuration()) {
+    public init(range: ClosedRange<V>,
+                sliderValue: Binding<V>,
+                configuration: Configuration = Configuration(),
+                step: V.Stride = 1) {
         self.range = range
         _sliderValue = sliderValue
         self.configuration = configuration
+        self.step = step
     }
 
     public var body: some View {
@@ -50,7 +53,7 @@ public struct GKSlider: View {
                         .frame(width: configuration.handleSize)
                         .foregroundStyle(configuration.handleColor)
                         .position(position)
-                        .gesture(
+                         .gesture(
                             DragGesture()
                                 .onChanged { onDragChanged($0, r: r) }
                                 .onEnded { _ in onDragEnded() }
@@ -58,6 +61,9 @@ public struct GKSlider: View {
                         .onAppear { onAppear(r) }
                 }
             }
+            .onChange(of: sliderValue, perform: {value in onSliderValueChange(value, proxy: reader)})
+
+
         }.fixedSize(
             horizontal: configuration.axis == .vertical,
             vertical: configuration.axis == .horizontal
@@ -92,7 +98,7 @@ public extension GKSlider {
 
 // MARK: Helpers
 extension GKSlider {
-    private var scaleLength: CGFloat {
+    private var scaleLength: V {
         range.upperBound - range.lowerBound
     }
 
@@ -102,12 +108,12 @@ extension GKSlider {
         switch configuration.axis {
         case .horizontal:
             position = CGPoint(
-                x: r.size.width * (sliderValue - range.lowerBound) / scaleLength,
+                x: CGFloat(V(r.size.width) * (sliderValue - range.lowerBound) / scaleLength),
                 y: r.size.height / 2)
         case .vertical:
             position = CGPoint(
                 x: r.size.width / 2,
-                y: r.size.height * (range.upperBound - sliderValue) / scaleLength)
+                y: CGFloat(V(r.size.height ) * (range.upperBound - sliderValue) / scaleLength))
         }
 
         lastPosition = position
@@ -120,19 +126,35 @@ extension GKSlider {
             let minPosition = min(lastPosition!.x + value.translation.width, r.size.width)
             let maxPosition = max(minPosition, r.frame(in: .local).minX)
             position.x = maxPosition
+            
+            let xPositionTimesScalelength: V = (V(position.x) * scaleLength)
 
-            sliderValue = (position.x * scaleLength) / r.size.width + range.lowerBound
+            sliderValue = xPositionTimesScalelength / V(r.size.width) + range.lowerBound
         case .vertical:
             let minPosition = min(lastPosition!.y + value.translation.height, r.size.height)
             let maxPosition = max(minPosition, r.frame(in: .local).minY)
             position.y = maxPosition
-
-            sliderValue = -((position.y * scaleLength) / r.size.height - range.upperBound)
+            let yPositionTimesScalelength: V = (V(position.y) * scaleLength)
+            sliderValue = -(yPositionTimesScalelength / V(r.size.height) - range.upperBound)
         }
     }
 
     private func onDragEnded() {
         lastPosition = position
         lastSliderValue = sliderValue
+    }
+
+    private func onSliderValueChange(_ value: V, proxy: GeometryProxy) {
+
+        switch configuration.axis {
+        case .horizontal:
+            position = CGPoint(
+                x: CGFloat(V(proxy.size.width) * (sliderValue - range.lowerBound) / scaleLength),
+                y: proxy.size.height / 2)
+        case .vertical:
+            position = CGPoint(
+                x: proxy.size.width / 2,
+                y: CGFloat(V(proxy.size.height) * (range.upperBound - sliderValue) / scaleLength))
+        }
     }
 }
