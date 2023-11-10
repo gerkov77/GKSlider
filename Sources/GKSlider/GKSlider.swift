@@ -97,6 +97,8 @@ extension GKSlider {
     }
 
     private func onAppear(_ r: GeometryProxy) {
+        sliderValue = max(min(range.upperBound, sliderValue), range.lowerBound)
+
         switch configuration.axis {
         case .horizontal:
             position = CGPoint(
