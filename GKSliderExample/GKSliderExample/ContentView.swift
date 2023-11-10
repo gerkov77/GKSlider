@@ -28,7 +28,6 @@ struct ContentView: View {
                 GKSlider(range: -10..<10,
                          sliderValue: $value,
                          configuration: .init())
-                .frame(width: 300, height: 20)
             }
             .padding()
         }
