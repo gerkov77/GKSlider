@@ -105,7 +105,7 @@ extension GKSlider {
         case .vertical:
             position = CGPoint(
                 x: r.size.width / 2,
-                y: r.size.height * (sliderValue - range.lowerBound) / scaleLength)
+                y: r.size.height * (range.upperBound - sliderValue) / scaleLength)
         }
 
         lastPosition = position
@@ -125,7 +125,7 @@ extension GKSlider {
             let maxPosition = max(minPosition, r.frame(in: .local).minY)
             position.y = maxPosition
 
-            sliderValue = (position.y * scaleLength) / r.size.height + range.lowerBound
+            sliderValue = -((position.y * scaleLength) / r.size.height - range.upperBound)
         }
     }
 
