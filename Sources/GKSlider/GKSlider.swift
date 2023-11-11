@@ -3,7 +3,7 @@
 
 import SwiftUI
 
-public struct GKSlider<V: BinaryFloatingPoint>: View {
+public struct GKSlider<V: BinaryFloatingPoint>: View where V.Stride : BinaryFloatingPoint {
     let configuration: Configuration
     let range: ClosedRange<V>
     var step: V.Stride
@@ -121,21 +121,36 @@ extension GKSlider {
     }
 
     private func onDragChanged(_ value: DragGesture.Value, r: GeometryProxy) {
+        var calcValue = sliderValue
+
         switch configuration.axis {
+
         case .horizontal:
             let minPosition = min(lastPosition!.x + value.translation.width, r.size.width)
             let maxPosition = max(minPosition, r.frame(in: .local).minX)
             position.x = maxPosition
-            
-            let xPositionTimesScalelength: V = (V(position.x) * scaleLength)
 
-            sliderValue = xPositionTimesScalelength / V(r.size.width) + range.lowerBound
+            let xPositionTimesScalelength: V = (V(position.x) * scaleLength)
+            calcValue =  xPositionTimesScalelength / V(r.size.width) + range.lowerBound
+
         case .vertical:
             let minPosition = min(lastPosition!.y + value.translation.height, r.size.height)
             let maxPosition = max(minPosition, r.frame(in: .local).minY)
             position.y = maxPosition
+
             let yPositionTimesScalelength: V = (V(position.y) * scaleLength)
-            sliderValue = -(yPositionTimesScalelength / V(r.size.height) - range.upperBound)
+            calcValue = -(yPositionTimesScalelength / V(r.size.height) - range.upperBound)
+        }
+        sliderValue = getSteppedValue(calcValue)
+    }
+
+    private func getSteppedValue(_ sliderValue: V) -> V {
+        let remainder = sliderValue.remainder(dividingBy: V(step))
+
+        if remainder != 0 {
+           return  sliderValue - remainder
+        } else {
+          return sliderValue
         }
     }
 
