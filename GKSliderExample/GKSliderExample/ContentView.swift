@@ -9,7 +9,7 @@ import GKSlider
 import SwiftUI
 
 struct ContentView: View {
-    @State var value = 0.0
+    @State var value = 1.1
 
     var body: some View {
         ZStack {
@@ -24,10 +24,14 @@ struct ContentView: View {
                     .padding(.bottom)
 
                 Text("\(value)")
-
-                GKSlider(range: -10..<10,
+                
+                GKSlider(range: -10...10,
                          sliderValue: $value,
-                         configuration: .init())
+                         configuration: .init(axis: .horizontal), step: 2
+                )
+                .frame(width: 300, height: 300)
+
+                Slider(value: $value, in: -10.0...10.0, step: 2)
             }
             .padding()
         }
